@@ -1,19 +1,10 @@
-FROM node:9.4
-
-# Create app directory
-WORKDIR /usr/src/app
-
-# Expose port for service
-EXPOSE 5000
-
-# Install and configure `serve`.
-RUN npm install -g serve
-
-# Copy source code to image
-COPY . .
-
-# Install dependencies
+FROM node:10.16.3-alpine as builder
+WORKDIR /app
+COPY package.json .
 RUN npm install
+COPY . .
+RUN npm run build
 
-# Build app and start server from script
-CMD ["/usr/src/app/run"]
+FROM nginx
+COPY --from=builder /app/build /usr/share/nginx/html
+COPY --from=builder /app/nginx.conf /etc/nginx/conf.d/default.conf
